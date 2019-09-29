@@ -6,7 +6,7 @@
 # 
 # Licensing:
 # 
-# Copyright © Fred Weinhaus
+# Copyright ï¿½ Fred Weinhaus
 # 
 # My scripts are available free of charge for non-commercial use, ONLY.
 # 
@@ -166,7 +166,6 @@
 # 
 ######
 #
-
 # set default values
 rotate="none"		# rotate 90 clockwise (cw) or counterclockwise (ccw)
 layout="portrait"   # rotate 90 to match layout; portrait or landscape
@@ -186,227 +185,198 @@ padamt=0			# pad amount
 bgcolor="white"		# color for output whiteboard background
 fuzzval=10			# fuzz value for determining bgcolor from image
 invert=""			# invert colors: 1 or 2
-
 # set directory for temporary files
 dir="."    # suggestions are dir="." or dir="/tmp"
-
 # set up functions to report Usage and Usage with Description
 PROGNAME=`type $0 | awk '{print $3}'`  # search for executable on path
 PROGDIR=`dirname $PROGNAME`            # extract directory of program
 PROGNAME=`basename $PROGNAME`          # base name of program
-usage1() 
-	{
-	echo >&2 ""
-	echo >&2 "$PROGNAME:" "$@"
-	sed >&2 -e '1,/^####/d;  /^###/g;  /^#/!q;  s/^#//;  s/^ //;  4,$p' "$PROGDIR/$PROGNAME"
-	}
-usage2() 
-	{
-	echo >&2 ""
-	echo >&2 "$PROGNAME:" "$@"
-	sed >&2 -e '1,/^####/d;  /^######/g;  /^#/!q;  s/^#*//;  s/^ //;  4,$p' "$PROGDIR/$PROGNAME"
-	}
-
-
+usage1() 	{	echo >&2 ""	echo >&2 "$PROGNAME:" "$@"	sed >&2 -e '1,/^####/d;  /^###/g;  /^#/!q;  s/^#//;  s/^ //;  4,$p' "$PROGDIR/$PROGNAME"}
+usage2() 	{	echo >&2 ""	echo >&2 "$PROGNAME:" "$@"	sed >&2 -e '1,/^####/d;  /^######/g;  /^#/!q;  s/^#*//;  s/^ //;  4,$p' "$PROGDIR/$PROGNAME"	}
 # function to report error messages
-errMsg()
-	{
-	echo ""
-	echo $1
-	echo ""
-	usage1
-	exit 1
-	}
-
-
+errMsg(){ echo ""	echo $1	echo ""	usage1	exit 1	}
 # function to test for minus at start of value of second part of option 1 or 2
-checkMinus()
-	{
-	test=`echo "$1" | grep -c '^-.*$'`   # returns 1 if match; 0 otherwise
-    [ $test -eq 1 ] && errMsg "$errorMsg"
-	}
-
+checkMinus()	{	test=`echo "$1" | grep -c '^-.*$'`   # returns 1 if match; 0 otherwise    [ $test -eq 1 ] && errMsg "$errorMsg"	}
 # test for correct number of arguments and get values
-if [ $# -eq 0 ]
-	then
-	# help information
-   echo ""
-   usage2
-   exit 0
-elif [ $# -gt 31 ]
-	then
+if [[ $# -eq 0 ]]
+then
+   	echo ""
+   	usage2
+   	exit 0
+elif [[ $# -gt 31 ]]
+then
 	errMsg "--- TOO MANY ARGUMENTS WERE PROVIDED ---"
 else
-	while [ $# -gt 0 ]
-		do
-			# get parameter values
-			case "$1" in
-		  -h|-help)    # help information
-					   echo ""
-					   usage2
-					   exit 0
-					   ;;
-			   	-r)    # rotate
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID ROTATE SPECIFICATION ---"
-					   checkMinus "$1"
-					   rotate=`echo "$1" | tr "[:upper:]" "[:lower:]"`
-					   case "$rotate" in
-					   		none|n) rotate="none" ;;
-					   		clockwise|cw) rotate="cw" ;;
-					   		counterclockwise|ccw) rotate="ccw" ;;
-					   		*) errMsg "--- ROTATE=$rotate IS NOT A VALID CHOICE ---" ;;
-					   esac
-					   ;;
-			   	-l)    # layout
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID LAYOUT SPECIFICATION ---"
-					   checkMinus "$1"
-					   layout=`echo "$1" | tr "[:upper:]" "[:lower:]"`
-					   case "$layout" in
-					   		portrait|p) layout="portrait" ;;
-					   		landscape|l) layout="landscape" ;;
-					   		*) errMsg "--- LAYOUT=$layout IS NOT A VALID CHOICE ---" ;;
-					   esac
-					   ;;
-				-c)    # get cropoffsets
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID CROPOFFSETS SPECIFICATION ---"
-					   checkMinus "$1"
-					   cropoff="$1"
-					   cropoff="${cropoff},"
-					   cropoff=`expr "$cropoff" : '\([,0-9]*\)'`
-					   numcrops=`echo "$cropoff" | tr "," " " | wc -w` 
-					   [ "$cropoff" = "" ] && errMsg "--- ONE OR TWO OR FOUR OFFSETS MUST BE PROVIDED ---"
-					   [ $numcrops -ne 1 -a $numcrops -ne 2 -a $numcrops -ne 4 ] && errMsg "--- ONE OR TWO OR FOUR OFFSETS MUST BE PROVIDED ---"
-					   crop1=`echo "$cropoff" | cut -d, -f1`
-					   crop2=`echo "$cropoff" | cut -d, -f2`
-					   crop3=`echo "$cropoff" | cut -d, -f3`
-					   crop4=`echo "$cropoff" | cut -d, -f4`
-					   ;;
-			   	-g)    # set grayscale
-					   gray="yes"
-					   ;;
-			   	-e)    # get enhance
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID ENHANCE SPECIFICATION ---"
-					   checkMinus "$1"
-					   enhance="$1"
-					   case "$1" in
-					   		none) ;;
-					   		stretch) ;;
-					   		normalize) ;;
-					   		*) errMsg "--- ENHANCE=$enhance IS NOT A VALID CHOICE ---" ;;
-					   esac
-					   ;;
-				-f)    # get filtersize
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID FILTERSIZE SPECIFICATION ---"
-					   checkMinus "$1"
-					   filtersize=`expr "$1" : '\([0-9]*\)'`
-					   [ "$filtersize" = "" ] && errMsg "--- FILTERSIZE=$filtersize MUST BE A NON-NEGATIVE INTEGER ---"
-					   filtersizetest=`echo "$filtersize < 1" | bc`
-					   [ $filtersizetest -eq 1 ] && errMsg "--- FILTERSIZE=$filtersize MUST BE AN INTEGER GREATER THAN 0 ---"
-					   ;;
-				-o)    # get offset
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID OFFSET SPECIFICATION ---"
-					   checkMinus "$1"
-					   offset=`expr "$1" : '\([0-9]*\)'`
-					   [ "$offset" = "" ] && errMsg "--- OFFSET=$offset MUST BE A NON-NEGATIVE INTEGER ---"
-					   ;;
-				-t)    # get threshold
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID THRESHOLD SPECIFICATION ---"
-					   checkMinus "$1"
-					   threshold=`expr "$1" : '\([0-9]*\)'`
-					   [ "$threshold" = "" ] && errMsg "--- THRESHOLD=$threshold MUST BE A NON-NEGATIVE INTEGER ---"
-					   thresholdtestA=`echo "$threshold < 0" | bc`
-					   thresholdtestB=`echo "$threshold > 100" | bc`
-					   [ $thresholdtestA -eq 1 -o $thresholdtestB -eq 1 ] && errMsg "--- THRESHOLD=$threshold MUST BE AN INTEGER GREATER BETWEEN 0 AND 100 ---"
-					   ;;
-				-s)    # get sharpamt
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID SHARPAMT SPECIFICATION ---"
-					   checkMinus "$1"
-					   sharpamt=`expr "$1" : '\([.0-9]*\)'`
-					   [ "$sharpamt" = "" ] && errMsg "--- SHARPAMT=$sharpamt MUST BE A NON-NEGATIVE FLOAT ---"
-					   ;;
-				-S)    # get saturation
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID SATURATION SPECIFICATION ---"
-					   checkMinus "$1"
-					   saturation=`expr "$1" : '\([0-9]*\)'`
-					   [ "$saturation" = "" ] && errMsg "--- SATURATION=$saturation MUST BE A NON-NEGATIVE INTEGER ---"
-					   ;;
-				-a)    # get adaptblur
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID ADAPTBLUR SPECIFICATION ---"
-					   checkMinus "$1"
-					   adaptblur=`expr "$1" : '\([.0-9]*\)'`
-					   [ "$adaptblur" = "" ] && errMsg "--- ADAPTBLUR=$adaptblur MUST BE A NON-NEGATIVE FLOAT ---"
-					   ;;
-			   	-u)    # set unrotate
-					   unrotate="yes"
-					   ;;
-			   	-T)    # set trim
-					   trim="yes"
-					   ;;
-				-p)    # get padamt
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID PADAMT SPECIFICATION ---"
-					   checkMinus "$1"
-					   padamt=`expr "$1" : '\([0-9]*\)'`
-					   [ "$padamt" = "" ] && errMsg "--- PADAMT=$padamt MUST BE A NON-NEGATIVE INTEGER ---"
-					   ;;
-			   	-b)    # get bgcolor
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID BACKGROUND COLOR SPECIFICATION ---"
-					   checkMinus "$1"
-					   bgcolor="$1"
-					   ;;
-				-F)    # get fuzzval
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID FUZZVAL SPECIFICATION ---"
-					   checkMinus "$1"
-					   fuzzval=`expr "$1" : '\([0-9]*\)'`
-					   [ "$fuzzval" = "" ] && errMsg "--- FUZZVAL=$fuzzval MUST BE A NON-NEGATIVE INTEGER ---"
-					   ;;
-				-i)    # get invert
-					   shift  # to get the next parameter
-					   # test if parameter starts with minus sign 
-					   errorMsg="--- INVALID INVERT SPECIFICATION ---"
-					   checkMinus "$1"
-					   invert=`expr "$1" : '\([0-9]*\)'`
-					   [ "$invert" = "" ] && errMsg "--- INVERT=$invert MUST BE A NON-NEGATIVE INTEGER ---"
-					   testA=`echo "$invert < 1" | bc`
-					   testB=`echo "$invert > 2" | bc`
-					   [ $testA -eq 1 -o $testB -eq 1 ] && errMsg "--- INVERT=$invert MUST BE AN INTEGER VALUE OF 1 OR 2 ---"
-					   ;;
-				 -)    # STDIN and end of arguments
-					   break
-					   ;;
-				-*)    # any other - argument
-					   errMsg "--- UNKNOWN OPTION ---"
-					   ;;
-		     	 *)    # end of arguments
-					   break
-					   ;;
-			esac
-			shift   # next option
+	while [[ $# -gt 0 ]]
+	do
+		# get parameter values
+		case "$1" in
+		-h|-help)    # help information
+					echo ""
+					usage2
+					exit 0
+					;;
+			-r)    # rotate
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID ROTATE SPECIFICATION ---"
+					checkMinus "$1"
+					rotate=`echo "$1" | tr "[:upper:]" "[:lower:]"`
+					case "$rotate" in
+						none|n) rotate="none" ;;
+						clockwise|cw) rotate="cw" ;;
+						counterclockwise|ccw) rotate="ccw" ;;
+						*) errMsg "--- ROTATE=$rotate IS NOT A VALID CHOICE ---" ;;
+					esac
+					;;
+			-l)    # layout
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID LAYOUT SPECIFICATION ---"
+					checkMinus "$1"
+					layout=`echo "$1" | tr "[:upper:]" "[:lower:]"`
+					case "$layout" in
+						portrait|p) layout="portrait" ;;
+						landscape|l) layout="landscape" ;;
+						*) errMsg "--- LAYOUT=$layout IS NOT A VALID CHOICE ---" ;;
+					esac
+					;;
+			-c)    # get cropoffsets
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID CROPOFFSETS SPECIFICATION ---"
+					checkMinus "$1"
+					cropoff="$1"
+					cropoff="${cropoff},"
+					cropoff=`expr "$cropoff" : '\([,0-9]*\)'`
+					numcrops=`echo "$cropoff" | tr "," " " | wc -w` 
+					[ "$cropoff" = "" ] && errMsg "--- ONE OR TWO OR FOUR OFFSETS MUST BE PROVIDED ---"
+					[ $numcrops -ne 1 -a $numcrops -ne 2 -a $numcrops -ne 4 ] && errMsg "--- ONE OR TWO OR FOUR OFFSETS MUST BE PROVIDED ---"
+					crop1=`echo "$cropoff" | cut -d, -f1`
+					crop2=`echo "$cropoff" | cut -d, -f2`
+					crop3=`echo "$cropoff" | cut -d, -f3`
+					crop4=`echo "$cropoff" | cut -d, -f4`
+					;;
+			-g)    # set grayscale
+					gray="yes"
+					;;
+			-e)    # get enhance
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID ENHANCE SPECIFICATION ---"
+					checkMinus "$1"
+					enhance="$1"
+					case "$1" in
+						none) ;;
+						stretch) ;;
+						normalize) ;;
+						*) errMsg "--- ENHANCE=$enhance IS NOT A VALID CHOICE ---" ;;
+					esac
+					;;
+			-f)    # get filtersize
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID FILTERSIZE SPECIFICATION ---"
+					checkMinus "$1"
+					filtersize=`expr "$1" : '\([0-9]*\)'`
+					[ "$filtersize" = "" ] && errMsg "--- FILTERSIZE=$filtersize MUST BE A NON-NEGATIVE INTEGER ---"
+					filtersizetest=`echo "$filtersize < 1" | bc`
+					[ $filtersizetest -eq 1 ] && errMsg "--- FILTERSIZE=$filtersize MUST BE AN INTEGER GREATER THAN 0 ---"
+					;;
+			-o)    # get offset
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID OFFSET SPECIFICATION ---"
+					checkMinus "$1"
+					offset=`expr "$1" : '\([0-9]*\)'`
+					[ "$offset" = "" ] && errMsg "--- OFFSET=$offset MUST BE A NON-NEGATIVE INTEGER ---"
+					;;
+			-t)    # get threshold
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID THRESHOLD SPECIFICATION ---"
+					checkMinus "$1"
+					threshold=`expr "$1" : '\([0-9]*\)'`
+					[ "$threshold" = "" ] && errMsg "--- THRESHOLD=$threshold MUST BE A NON-NEGATIVE INTEGER ---"
+					thresholdtestA=`echo "$threshold < 0" | bc`
+					thresholdtestB=`echo "$threshold > 100" | bc`
+					[ $thresholdtestA -eq 1 -o $thresholdtestB -eq 1 ] && errMsg "--- THRESHOLD=$threshold MUST BE AN INTEGER GREATER BETWEEN 0 AND 100 ---"
+					;;
+			-s)    # get sharpamt
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID SHARPAMT SPECIFICATION ---"
+					checkMinus "$1"
+					sharpamt=`expr "$1" : '\([.0-9]*\)'`
+					[ "$sharpamt" = "" ] && errMsg "--- SHARPAMT=$sharpamt MUST BE A NON-NEGATIVE FLOAT ---"
+					;;
+			-S)    # get saturation
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID SATURATION SPECIFICATION ---"
+					checkMinus "$1"
+					saturation=`expr "$1" : '\([0-9]*\)'`
+					[ "$saturation" = "" ] && errMsg "--- SATURATION=$saturation MUST BE A NON-NEGATIVE INTEGER ---"
+					;;
+			-a)    # get adaptblur
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID ADAPTBLUR SPECIFICATION ---"
+					checkMinus "$1"
+					adaptblur=`expr "$1" : '\([.0-9]*\)'`
+					[ "$adaptblur" = "" ] && errMsg "--- ADAPTBLUR=$adaptblur MUST BE A NON-NEGATIVE FLOAT ---"
+					;;
+			-u)    # set unrotate
+					unrotate="yes"
+					;;
+			-T)    # set trim
+					trim="yes"
+					;;
+			-p)    # get padamt
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID PADAMT SPECIFICATION ---"
+					checkMinus "$1"
+					padamt=`expr "$1" : '\([0-9]*\)'`
+					[ "$padamt" = "" ] && errMsg "--- PADAMT=$padamt MUST BE A NON-NEGATIVE INTEGER ---"
+					;;
+			-b)    # get bgcolor
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID BACKGROUND COLOR SPECIFICATION ---"
+					checkMinus "$1"
+					bgcolor="$1"
+					;;
+			-F)    # get fuzzval
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID FUZZVAL SPECIFICATION ---"
+					checkMinus "$1"
+					fuzzval=`expr "$1" : '\([0-9]*\)'`
+					[ "$fuzzval" = "" ] && errMsg "--- FUZZVAL=$fuzzval MUST BE A NON-NEGATIVE INTEGER ---"
+					;;
+			-i)    # get invert
+					shift  # to get the next parameter
+					# test if parameter starts with minus sign 
+					errorMsg="--- INVALID INVERT SPECIFICATION ---"
+					checkMinus "$1"
+					invert=`expr "$1" : '\([0-9]*\)'`
+					[ "$invert" = "" ] && errMsg "--- INVERT=$invert MUST BE A NON-NEGATIVE INTEGER ---"
+					testA=`echo "$invert < 1" | bc`
+					testB=`echo "$invert > 2" | bc`
+					[ $testA -eq 1 -o $testB -eq 1 ] && errMsg "--- INVERT=$invert MUST BE AN INTEGER VALUE OF 1 OR 2 ---"
+					;;
+				-)    # STDIN and end of arguments
+					break
+					;;
+			-*)    # any other - argument
+					errMsg "--- UNKNOWN OPTION ---"
+					;;
+				*)    # end of arguments
+					break
+					;;
+		esac
+		shift   # next option
 	done
 	#
 	# get infile and outfile

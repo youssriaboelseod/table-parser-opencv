@@ -1,3 +1,4 @@
+
 class Table:
     def __init__(self, x, y, w, h):
         self.x = x

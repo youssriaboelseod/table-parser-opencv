@@ -4,7 +4,7 @@ import pytesseract as tess
 from PIL import Image
 import subprocess as s
 import os
-#import textcleaner as tc
+import textcleaner 
 
 """
 Apply morphology operations
@@ -67,11 +67,35 @@ def run_textcleaner(filename, img_id):
     mkdir("bin/cleaned/")
 
     # Run textcleaner
-    cleaned_file = "bin/cleaned/cleaned" + str(img_id) + ".jpg"
-    s.call(["./textcleaner", "-g", "-e", "none", "-f", str(10), "-o", str(5), filename, cleaned_file])
+    
+    #sorce coed
+    #cleaned_file = "bin/cleaned/cleaned" + str(img_id) + ".jpg"
+    
+    #source code
+    #s.call(["./textcleaner", "-g", "-e", "none", "-f", str(10), "-o", str(5), filename, cleaned_file])
+    
+    #cancel code
+    #s.call(["textcleaner", "-g", "-e", "none", "-f", str(10), "-o", str(5), filename, cleaned_file])
+    #textcleaner.main_cleaner(filename,cleaned_file)
 
+    #s.check_call(["./textcleaner", "-g", "-e", "none", "-f", str(10), "-o", str(5), filename, cleaned_file])
+    #copy files and rename for pass textclean error
+    cleaned_file =  "cleaned"+str(img_id) + ".jpg"
+    import os
+    import shutil
+    src_dir= os.curdir
+    
+    dst_dir= os.path.join(os.curdir)
+    src_file = os.path.join(src_dir, filename)
+
+    shutil.copy(src_file,dst_dir)
+    
+    dst_file = os.path.join(dst_dir, filename)
+    
+    new_dst_file_name = os.path.join(dst_dir, cleaned_file)
+    os.rename(dst_file, new_dst_file_name)
+    
     return cleaned_file
-
 """
 Run tesseract to perform optical character recognition (OCR)
 """
